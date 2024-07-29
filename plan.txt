@@ -1,0 +1,106 @@
+project obejective : To develop a comprehensive credit 
+card weekly dashboard that 
+provides real-time insights into key 
+performance metrics and trends, 
+enabling stakeholders to monitor 
+and analyze credit card operations 
+effectively.
+
+Credit card financial dashboard using Power BI:
+• Developed an interactive dashboard using 
+transaction and customer data from a SQL database, 
+to provide real-time insights. 
+• Streamlined data processing & analysis to monitor 
+key performance metrics and trends.
+• Shared actionable insights with stakeholders based 
+on dashboard findings to support decision-making 
+processes.
+
+
+
+1) Import Data From SQL Database:
+using pgadmin4 using PL/SQL:
+create "ccdb" database that have two table : cc_detail , cust_detail
+
+
+
+2)Data Processing And DAX Queries :
+
+i)ADD new columns  AgeGroup,IncomeGroup in cust_detail table using this formula : 
+AgeGroup = SWITCH(
+    TRUE(),
+    'public cust_detail'[customer_age] < 30, "20-30",
+    'public cust_detail'[customer_age] >= 30 && 'public cust_detail'[customer_age] < 40,"30-40",
+    'public cust_detail'[customer_age] >= 40 && 'public cust_detail'[customer_age] < 50,"40-50",
+    'public cust_detail'[customer_age] >= 50 && 'public cust_detail'[customer_age] < 60,"50-60",
+    'public cust_detail'[customer_age] >= 60 ,"60+",
+    "unknown"
+)
+
+IncomeGroup = SWITCH(
+    TRUE(),
+'public cust_detail'[income] <35000,"Low",
+'public cust_detail'[income] >=35000 && 'public cust_detail'[income]<70000,"Med",
+'public cust_detail'[income] >=70000,"High",
+"unknown"
+)
+
+ii) Add new columns Revenue,week_num2 in cc_detail table using this formula : 
+
+Revenue = 'public cc_detail'[annual_fees] + 'public cc_detail'[total_trans_amt] + 'public cc_detail'[interest_earned]
+
+week_num2 = WEEKNUM('public cc_detail'[week_start_date])
+
+iii) two measures current_week_revenue and previous_week_revenue :
+
+Current_week_Reveneue = CALCULATE(
+    SUM('public cc_detail'[Revenue]),
+    FILTER(
+        ALL('public cc_detail'),
+        'public cc_detail'[week_num2] = MAX('public cc_detail'[week_num2] )))
+
+Previous_week_Reveneue = CALCULATE(
+    SUM('public cc_detail'[Revenue]),
+    FILTER(
+        ALL('public cc_detail'),
+        'public cc_detail'[week_num2] = MAX('public cc_detail'[week_num2] ) - 1))
+
+
+in business to find week on week percentage change : 
+basic formula : (current value - previous value )/ previous value
+
+that why we create third measure for week on week revenue  :
+
+wow_Reveneue = DIVIDE(([Current_week_Reveneue] - [Previous_week_Reveneue]),[Previous_week_Reveneue])
+
+
+3) Design Dashboard and get insights :
+
+design two dashboard: Credit card Customer Report,Credit Card Transaction Report
+
+
+4)add new data check project insights:
+cc_add.csv and cust_add.csv means add new week data in sql and check dashboard 
+week 53 data is added then:
+WOW Change : 
+	Revenue increased by 28.8%
+	total_trans_amt - 35.03%
+	total_trans_count - 3.39%
+	customer_count  - 3.69%
+
+Overview YTD:
+• Overall revenue is 57M
+• Total interest is 8M
+• Total transaction amount is 46M
+• Male customers are contributing more in revenue 31M, female 26M
+• Blue & Silver credit card are contributing to 93% of overall 
+transactions
+• TX, NY & CA is contributing to 68%
+• Overall Activation rate is 57.5%
+• Overall Delinquent rate is 6.06%
+
+most of customer who have job type selfemployeed fail to returns money.
+
+
+
+
